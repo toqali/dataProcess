@@ -2,12 +2,19 @@ import pandas as pd
 
 class dataProcess:
     def __init__(self, data_path):
+        # Initialize the dataProcess object with the provided data_path
         self.data_path = data_path
         self.result = None
-        self.shape = self.read_file().shape
-        self.columns = self.read_file().columns
+        
+        # Read the file and store it in self.df
         self.df = self.read_file()
+        
+        # Get the shape and column names of the DataFrame
+        self.shape = self.df.shape
+        self.columns = self.df.columns
+        
     def get_extension(self):
+        # Extract the file extension from the data_path
         return self.data_path.split(".")[-1]
 
     def read_file(self):
@@ -24,39 +31,37 @@ class dataProcess:
                 df = pd.read_excel(self.data_path)
             return df
         except Exception as e:
+            # Raise an error if there is an issue reading the file
             raise ValueError(f"Error reading file: {str(e)}")
-    def show_df(self, rows = 5):
-            return self.read_file().head(rows)
-    def describe_df(self) : 
-        return  self.read_file().describe()
-    def info_df(self) : 
-        return self.read_file().info()
-    def num_missingValues(self):
-        return self.read_file().isna().sum()
-    def handle_missing(self):
-        for col in self.columns:
-            if self.df[col].dtypes in ["int64", "float64"]:
-                self.df[col].fillna(self.df[col].median(), inplace = True)
-            if self.df[col].dtypes in ["object", "bool"]  :
-               mode_value = self.df[col].mode()[0] 
-               self.df[col].fillna(mode_value, inplace=True)
-    def show_process_dfinfo(self):
-        print("=============== Samples of data ===============")
-        print(self.show_df())  
-        print("=============== Samples of info ===============")
-        print(self.info_df())
-        print("=============== Samples of General description ===============")
-        print("Shape = ", self.shape, "\nColumns are ", list(self.columns))
-        print(self.describe_df)
-        if self.num_missingValues().sum() !=0:
-            print("============= Before ==================")
-            print(self.num_missingValues())
-            self.handle_missing()
-            print("============= After ===================")
-            print(self.num_missingValues())
-        else : 
-            print("The data does not have missing values :) ")    
-        
-        
+            
+    def show_df(self, rows=5):
+        # Display the first 'rows' rows of the DataFrame
+        return self.df.head(rows)
     
-
+    def describe_df(self):
+        # Generate descriptive statistics of the DataFrame
+        return self.df.describe()
+    
+    def info_df(self):
+        # Display information about the DataFrame
+        return self.df.info()
+    
+    def num_missingValues(self):
+        # Count the number of missing values in each column
+        return self.df.isna().sum()
+    
+    def handle_missing(self):
+        # Handle missing values in the DataFrame
+        
+        # Get the columns with missing values
+        missing_cols = self.df.columns[self.df.isnull().any()].tolist()
+        
+        # Fill missing values based on data type of each column
+        for col in missing_cols:
+            if self.df[col].dtype in ["int64", "float64"]:
+                # For numerical columns, fill with median
+                self.df[col] = self.df[col].fillna(self.df[col].median())
+            elif self.df[col].dtype in ["object", "bool"]:
+                # For categorical columns, fill with mode
+                mode_value = self.df[col].mode()[0] 
+                self.df[col] = self.df[col].fillna(mode_value)
